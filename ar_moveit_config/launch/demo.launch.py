@@ -79,16 +79,16 @@ def generate_launch_description():
 
     # Planning Configuration
     ompl_planning_pipeline_config = {
-        "move_group": {
+        "default_planning_pipeline": "ompl",
+        "planning_pipelines": ["ompl"],
+        "ompl": {
             "planning_plugin": "ompl_interface/OMPLPlanner",
-            "request_adapters":
-            """default_planner_request_adapters/AddTimeOptimalParameterization default_planner_request_adapters/FixWorkspaceBounds default_planner_request_adapters/FixStartStateBounds default_planner_request_adapters/FixStartStateCollision default_planner_request_adapters/FixStartStatePathConstraints""",
             "start_state_max_bounds_error": 0.1,
         }
     }
     ompl_planning_yaml = load_yaml("ar_moveit_config",
                                    "config/ompl_planning.yaml")
-    ompl_planning_pipeline_config["move_group"].update(ompl_planning_yaml)
+    ompl_planning_pipeline_config["ompl"].update(ompl_planning_yaml)
 
     # Trajectory Execution Configuration
     controllers_yaml = load_yaml("ar_moveit_config", "config/controllers.yaml")
@@ -218,27 +218,6 @@ def generate_launch_description():
         ],
     )
 
-    # Warehouse mongodb server
-    db_config = LaunchConfiguration("db")
-    mongodb_server_node = Node(
-        package="warehouse_ros_mongo",
-        executable="mongo_wrapper_ros.py",
-        parameters=[
-            {
-                "warehouse_port": 33829
-            },
-            {
-                "warehouse_host": "localhost"
-            },
-            {
-                "warehouse_plugin":
-                "warehouse_ros_mongo::MongoDatabaseConnection"
-            },
-        ],
-        output="screen",
-        condition=IfCondition(db_config),
-    )
-
     return LaunchDescription([
         db_arg,
         ar_model_arg,
@@ -247,7 +226,6 @@ def generate_launch_description():
         robot_state_publisher,
         run_move_group_node,
         ros2_control_node,
-        mongodb_server_node,
         joint_state_broadcaster_spawner,
         joint_controller_spawner,
         gripper_controller_spawner,

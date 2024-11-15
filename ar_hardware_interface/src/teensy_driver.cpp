@@ -181,14 +181,15 @@ namespace ar_hardware_interface
 
   void TeensyDriver::receive(std::string &inMsg)
   {
-    RCLCPP_INFO(logger_, "Receiving message...");
+    // RCLCPP_INFO(logger_, "Receiving message...");
     char c;
     std::string msg = "";
     bool eol = false;
     while (!eol)
     {
+      // RCLCPP_INFO(logger_, "Reading char...");
       boost::asio::read(serial_port_, boost::asio::buffer(&c, 1));
-      RCLCPP_INFO(logger_, "Received char: %c", c); // Log the received character
+      // RCLCPP_INFO(logger_, "Received char: %c", c); // Log the received character
       switch (c)
       {
       case '\r':
@@ -198,10 +199,10 @@ namespace ar_hardware_interface
         break;
       default:
         msg += c;
-        RCLCPP_INFO(logger_, "Received message: %s", msg.c_str());
+        // RCLCPP_INFO(logger_, "Received message: %s", msg.c_str());
       }
     }
-    RCLCPP_INFO(logger_, "Received message: %s", msg.c_str());
+    // RCLCPP_INFO(logger_, "Received message: %s", msg.c_str());
     inMsg = msg;
   }
 

@@ -166,19 +166,13 @@ void setupSteppersMK3()
 // that the software version matches the firmware version
 bool initStateTraj(String inData)
 {
-  Serial.println("The in data: " + inData);
   // parse initialisation message
   int idxVersion = inData.indexOf('A');
   int idxModel = inData.indexOf('B');
   String softwareVersion = inData.substring(idxVersion + 1, idxModel);
   int versionMatches = (softwareVersion == VERSION);
-  // Serial.println("The software version: ");
-  // Serial.println(softwareVersion);
-  // Serial.println("The software VERSIOM: ");
-  // Serial.println(VERSION);
 
   String model = inData.substring(idxModel + 1, inData.length() - 1);
-  // Serial.println("The model: " + model);
   int modelMatches = false;
   if (model == "mk1" || model == "mk2" || model == "mk3")
   {
@@ -209,15 +203,9 @@ bool initStateTraj(String inData)
   // return acknowledgement with result
   String msg = String("ST") + "A" + versionMatches + "B" + VERSION + "C" +
                modelMatches + "D" + MODEL;
-  Serial.print("The message: ");
   Serial.println(msg);
 
-  // Print the result of versionMatches && modelMatches
-  bool result = versionMatches && modelMatches;
-  Serial.print("Result of versionMatches && modelMatches: ");
-  Serial.println(result);
-
-  if (result)
+  if (versionMatches && modelMatches)
   {
     return true;
   }
@@ -468,7 +456,7 @@ void stateTRAJ()
   // initialise joint steps
   double curJointPos[NUM_JOINTS];
   int curMotorSteps[NUM_JOINTS];
-  (curMotorSteps);
+  readMotorSteps(curMotorSteps);
 
   double cmdJointPos[NUM_JOINTS];
   int cmdEncSteps[NUM_JOINTS];
@@ -484,23 +472,14 @@ void stateTRAJ()
     // check for message from host
     if (Serial.available())
     {
-      // Flush the serial buffer
-      while (Serial.available() > 0)
-      {
-        received = Serial.read();
-        Serial.print(received); // Print the received character
-        inData += received;
-        Serial.println(inData);
-      }
+      received = Serial.read();
+      inData += received;
     }
 
     // process message when new line character is received
     if (received == '\n')
     {
-      // Serial.print("In the receiving state");
-      // Serial.println(inData);
       String function = inData.substring(0, 2);
-      // Serial.println(function);
       if (function == "ST")
       {
         if (!initStateTraj(inData))

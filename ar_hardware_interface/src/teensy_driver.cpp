@@ -115,7 +115,7 @@ namespace ar_hardware_interface
   {
     std::string inMsg;
     std::string errTransmit = "";
-    RCLCPP_INFO(logger_, "Sending message exchange: %s", outMsg.c_str());
+    // RCLCPP_INFO(logger_, "Sending message exchange: %s", outMsg.c_str());
 
     if (!transmit(outMsg, errTransmit))
     {
@@ -123,12 +123,12 @@ namespace ar_hardware_interface
       return false;
     }
 
-    RCLCPP_INFO(logger_, "Sent message exchange: %s", outMsg.c_str());
+    // RCLCPP_INFO(logger_, "Sent message exchange: %s", outMsg.c_str());
 
     receive(inMsg);
     // parse msg
     std::string header = inMsg.substr(0, 2);
-    RCLCPP_INFO(logger_, "Received header: %s", header.c_str());
+    // RCLCPP_INFO(logger_, "Received header: %s", header.c_str());
     if (header == "ST")
     {
       // init acknowledgement

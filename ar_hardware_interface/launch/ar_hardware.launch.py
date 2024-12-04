@@ -1,12 +1,15 @@
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.conditions import IfCondition
+from launch.substitutions import (
+    Command,
+    FindExecutable,
+    LaunchConfiguration,
+    PathJoinSubstitution,
+)
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterFile
 from launch_ros.substitutions import FindPackageShare
-
-from launch.conditions import IfCondition
-from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
-from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
 
 
 def generate_launch_description():
@@ -16,39 +19,43 @@ def generate_launch_description():
     arduino_serial_port = LaunchConfiguration("arduino_serial_port")
     ar_model_config = LaunchConfiguration("ar_model")
 
-    robot_description_content = Command([
-        PathJoinSubstitution([FindExecutable(name="xacro")]),
-        " ",
-        PathJoinSubstitution([
-            FindPackageShare("ar_hardware_interface"), "urdf", "ar.urdf.xacro"
-        ]),
-        " ",
-        "ar_model:=",
-        ar_model_config,
-        " ",
-        "serial_port:=",
-        serial_port,
-        " ",
-        "calibrate:=",
-        calibrate,
-        " ",
-        "include_gripper:=",
-        include_gripper,
-        " ",
-        "arduino_serial_port:=",
-        arduino_serial_port,
-    ])
+    robot_description_content = Command(
+        [
+            PathJoinSubstitution([FindExecutable(name="xacro")]),
+            " ",
+            PathJoinSubstitution(
+                [FindPackageShare("ar_hardware_interface"), "urdf", "ar.urdf.xacro"]
+            ),
+            " ",
+            "ar_model:=",
+            ar_model_config,
+            " ",
+            "serial_port:=",
+            serial_port,
+            " ",
+            "calibrate:=",
+            calibrate,
+            " ",
+            "include_gripper:=",
+            include_gripper,
+            " ",
+            "arduino_serial_port:=",
+            arduino_serial_port,
+        ]
+    )
     robot_description = {"robot_description": robot_description_content}
 
-    joint_controllers_cfg = PathJoinSubstitution([
-        FindPackageShare("ar_hardware_interface"), "config", "controllers.yaml"
-    ])
+    joint_controllers_cfg = PathJoinSubstitution(
+        [FindPackageShare("ar_hardware_interface"), "config", "controllers.yaml"]
+    )
 
-    update_rate_config_file = PathJoinSubstitution([
-        FindPackageShare("ar_hardware_interface"),
-        "config",
-        "controller_update_rate.yaml",
-    ])
+    update_rate_config_file = PathJoinSubstitution(
+        [
+            FindPackageShare("ar_hardware_interface"),
+            "config",
+            "controller_update_rate.yaml",
+        ]
+    )
 
     controller_manager_node = Node(
         package="controller_manager",
@@ -59,6 +66,7 @@ def generate_launch_description():
             ParameterFile(joint_controllers_cfg, allow_substs=True),
         ],
         output="screen",
+        # arguments=["--ros-args", "--log-level", "DEBUG"],  # Set logging level to DEBUG
     )
 
     spawn_joint_controller = Node(
@@ -71,6 +79,8 @@ def generate_launch_description():
             "--controller-manager-timeout",
             "60",
         ],
+        output="screen",
+        # arguments=["--ros-args", "--log-level", "DEBUG"],  # Set logging level to DEBUG
     )
 
     gripper_controller_spawner = Node(
@@ -84,6 +94,8 @@ def generate_launch_description():
             "60",
         ],
         condition=IfCondition(include_gripper),
+        output="screen",
+        # arguments=["--ros-args", "--log-level", "DEBUG"],  # Set logging level to DEBUG
     )
 
     robot_state_publisher_node = Node(
@@ -91,6 +103,7 @@ def generate_launch_description():
         executable="robot_state_publisher",
         output="both",
         parameters=[robot_description],
+        # arguments=["--ros-args", "--log-level", "DEBUG"],  # Set logging level to DEBUG
     )
 
     joint_state_broadcaster = Node(
@@ -102,7 +115,12 @@ def generate_launch_description():
             "/controller_manager",
             "--controller-manager-timeout",
             "60",
+            # "--ros-args",
+            # "--log-level",
+            # "DEBUG",
         ],
+        output="screen",
+        # arguments=["--ros-args", "--log-level", "DEBUG"],  # Set logging level to DEBUG
     )
 
     ld = LaunchDescription()
@@ -111,32 +129,39 @@ def generate_launch_description():
             "serial_port",
             default_value="/dev/ttyACM0",
             description="Serial port to connect to the robot",
-        ))
+        )
+    )
     ld.add_action(
         DeclareLaunchArgument(
             "calibrate",
             default_value="True",
             description="Calibrate the robot on startup",
             choices=["True", "False"],
-        ))
+        )
+    )
     ld.add_action(
         DeclareLaunchArgument(
             "include_gripper",
             default_value="True",
             description="Run the servo gripper",
             choices=["True", "False"],
-        ))
+        )
+    )
     ld.add_action(
         DeclareLaunchArgument(
             "arduino_serial_port",
             default_value="/dev/ttyUSB0",
             description="Serial port of the Arduino nano for the servo gripper",
-        ))
+        )
+    )
     ld.add_action(
-        DeclareLaunchArgument("ar_model",
-                              default_value="mk3",
-                              choices=["mk1", "mk2", "mk3"],
-                              description="Model of AR4"))
+        DeclareLaunchArgument(
+            "ar_model",
+            default_value="mk3",
+            choices=["mk1", "mk2", "mk3"],
+            description="Model of AR4",
+        )
+    )
     ld.add_action(controller_manager_node)
     ld.add_action(spawn_joint_controller)
     ld.add_action(gripper_controller_spawner)

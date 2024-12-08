@@ -78,7 +78,15 @@
       "typeindex": "cpp",
       "typeinfo": "cpp",
       "variant": "cpp",
-      "*.ipp": "cpp"
+      "*.ipp": "cpp",
+      "callback": "cpp",
+      "image": "cpp",
+      "bufferobject": "cpp",
+      "mixinvector": "cpp",
+      "texture": "cpp",
+      "vertexarraystate": "cpp",
+      "buffered_value": "cpp",
+      "fast_back_stack": "cpp"
     },
     "ros.distro": "iron",
     "C_Cpp.default.includePath": [
@@ -97,5 +105,8 @@
       "build": true,
       "install": true,
       "log": true
-    }
+    },
+    "cSpell.words": [
+      "RCLCPP"
+    ]
 }
